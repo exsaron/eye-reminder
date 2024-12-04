@@ -163,6 +163,9 @@ class TrayMenu(QMenu):
         self.start_action = self.addAction('СТАРТ')
         self.start_action.setIcon(QIcon(config.icons.timer_start))
 
+        self.pause_action = self.addAction('ПАУЗА')
+        self.pause_action.setIcon(QIcon(config.icons.timer_pause))
+
         self.stop_action = self.addAction('СТОП')
         self.stop_action.setIcon(QIcon(config.icons.timer_stop))
 

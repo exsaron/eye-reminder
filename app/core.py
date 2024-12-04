@@ -58,6 +58,7 @@ class EyeReminder(QMainWindow):
     def connect_tray(self) -> None:
         self.tray.icon.activated.connect(self.tray_icon_activated)
         self.tray.menu.start_action.triggered.connect(self.countdown.start)
+        self.tray.menu.pause_action.triggered.connect(self.countdown.pause)
         self.tray.menu.stop_action.triggered.connect(self.countdown.stop)
         self.tray.menu.exit_action.triggered.connect(self.exit_app)
 
@@ -86,7 +87,7 @@ class EyeReminder(QMainWindow):
 
     @Slot()
     def countdown_paused(self) -> None:
-        pass
+        self.tray.icon.setIcon(QIcon(config.icons.tray_message))
 
     @Slot()
     def countdown_stopped(self) -> None:

@@ -10,7 +10,7 @@ from .ui import TrayMenu
 class Countdown(QObject):
     started = Signal()
     expired = Signal()
-    updated = Signal()
+    updated = Signal(int)
     paused = Signal()
     stopped = Signal()
 
@@ -43,10 +43,10 @@ class Countdown(QObject):
     @Slot()
     def update(self) -> None:
         self.remaining_seconds -= 1
+        self.updated.emit(self.remaining_seconds)
+
         if self.remaining_seconds <= 0:
             self.restart()
-
-        self.updated.emit()
 
     @Slot()
     def pause(self) -> None:

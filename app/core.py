@@ -27,7 +27,7 @@ class EyeReminder(QMainWindow):
         self.ui = UIContainer()
         self.connect_ui()
 
-        self.update_timer_displayer()
+        self.update_timer_displayer(self.countdown.remaining_seconds)
 
     def configure(self) -> None:
         self.setWindowTitle(config.app_title)
@@ -81,9 +81,10 @@ class EyeReminder(QMainWindow):
     def countdown_expired(self) -> None:
         self.notify()
 
-    @Slot()
-    def countdown_updated(self) -> None:
-        self.update_timer_displayer()
+    @Slot(int)
+    def countdown_updated(self, seconds_left: int) -> None:
+        self.update_timer_displayer(seconds_left)
+        self.update_tray_tooltip(seconds_left)
 
     @Slot()
     def countdown_paused(self) -> None:
@@ -92,12 +93,31 @@ class EyeReminder(QMainWindow):
     @Slot()
     def countdown_stopped(self) -> None:
         self.tray.icon.setIcon(QIcon(config.icons.tray_inactive))
-        self.update_timer_displayer()
+        self.update_tray_tooltip(-1)
         self.ui.timer_controller.enable()
 
-    def update_timer_displayer(self) -> None:
-        remains = TimeInterval.from_seconds(self.countdown.remaining_seconds)
+    @Slot(int)
+    def update_timer_displayer(self, seconds_left: int) -> None:
+        remains = TimeInterval.from_seconds(seconds_left)
         self.ui.timer_displayer.display(remains.string)
+
+    @Slot(int)
+    def update_tray_tooltip(self, seconds_left: int) -> None:
+        """
+        Обновляет тултип иконки трея для отображения оставшегося времени
+        :param seconds_left: передать ``-1`` - вернуть тултип по умолчанию
+        """
+        if seconds_left < 0:
+            self.tray.icon.setToolTip(config.tooltips.tray_default)
+            return
+
+        remains = TimeInterval.from_seconds(seconds_left)
+        if remains.minutes > 0:
+            tooltip = f'Осталось {remains.minutes} мин.'
+        else:
+            tooltip = 'Осталось менее 1 минуты'
+
+        self.tray.icon.setToolTip(tooltip)
 
     def notify(self) -> None:
         self.tray.icon.showMessage(

@@ -27,6 +27,7 @@ class Tooltips:
     timer_pause: str = 'Остановка таймера с сохранением текущего значения'
     timer_stop: str = 'Остановка и обнуление таймера'
     save: str = 'Сохранить текущие настройки'
+    tray_default: str = APP_NAME
 
 
 @dataclass(frozen=True)

@@ -8,8 +8,9 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QLCDNumber,
+    QWidgetAction,
 )
-from PySide6.QtGui import QIcon, Qt
+from PySide6.QtGui import QIcon, Qt, QPalette, QColor
 from PySide6.QtCore import Signal, Slot
 
 from .config import config
@@ -101,6 +102,22 @@ class TimerController(QHBoxLayout):
         self.seconds_updated.emit(self.interval.total_seconds)
 
 
+class TimerDisplayer(QLCDNumber):
+    def __init__(self, parent: QWidget | None = None, min_height: int = 100) -> None:
+        super().__init__(parent)
+        self.setSegmentStyle(QLCDNumber.Filled)
+        self.set_active(False)
+        self.setDigitCount(8)
+        self.setMinimumHeight(min_height)
+        self.display(TimeInterval.from_seconds(0).string)
+
+    def set_active(self, is_active: bool) -> None:
+        color = QColor(0, 0, 0) if is_active else QColor(100, 100, 100)
+        palette = QPalette()
+        palette.setColor(QPalette.Active, QPalette.WindowText, color)
+        self.setPalette(palette)
+
+
 class UIContainer(QWidget):
     def __init__(self):
         super().__init__()
@@ -108,10 +125,7 @@ class UIContainer(QWidget):
         layout = QVBoxLayout()
         controls_layout = QHBoxLayout()
 
-        self.timer_displayer = QLCDNumber(self)
-        self.timer_displayer.setSegmentStyle(QLCDNumber.Filled)
-        self.timer_displayer.setDigitCount(8)
-        self.timer_displayer.setMinimumHeight(100)
+        self.timer_displayer = TimerDisplayer(parent=self)
         layout.addWidget(self.timer_displayer)
 
         self.timer_controller = TimerController()
@@ -160,6 +174,18 @@ class TrayMenu(QMenu):
     def __init__(self):
         super().__init__()
 
+        self.timer_displayer = TimerDisplayer(parent=self, min_height=45)
+        timer_displayer_action = QWidgetAction(self)
+        timer_displayer_action.setDefaultWidget(self.timer_displayer)
+        self.addAction(timer_displayer_action)
+
+        self.addSeparator()
+
+        self.settings_action = self.addAction('НАСТРОЙКИ')
+        self.settings_action.setIcon(QIcon(config.icons.settings))
+
+        self.addSeparator()
+
         self.start_action = self.addAction('СТАРТ')
         self.start_action.setIcon(QIcon(config.icons.timer_start))
 
@@ -168,6 +194,8 @@ class TrayMenu(QMenu):
 
         self.stop_action = self.addAction('СТОП')
         self.stop_action.setIcon(QIcon(config.icons.timer_stop))
+
+        self.addSeparator()
 
         self.exit_action = self.addAction('ВЫХОД')
         self.exit_action.setIcon(QIcon(config.icons.shutdown))

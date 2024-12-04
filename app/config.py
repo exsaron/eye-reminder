@@ -43,6 +43,7 @@ class IconPaths:
     timer_stop: str
     plus: str
     minus: str
+    settings: str
 
 
 def load_icon(dir_path: Path, name: str) -> str:
@@ -62,6 +63,7 @@ def get_icon_paths(dir_path: Path) -> IconPaths:
         timer_stop=load_icon(dir_path, 'timer_stop.png'),
         plus=load_icon(dir_path, 'plus.png'),
         minus=load_icon(dir_path, 'minus.png'),
+        settings=load_icon(dir_path, 'settings.png'),
     )
 
 

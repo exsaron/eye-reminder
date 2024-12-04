@@ -31,7 +31,7 @@ class EyeReminder(QMainWindow):
 
     def configure(self) -> None:
         self.setWindowTitle(config.app_title)
-        self.setWindowIcon(QIcon(config.icons.app))
+        self.setWindowIcon(QIcon(config.icons.settings))
         self.resize(*config.config_window_size)
         self.center_window()
 
@@ -57,6 +57,7 @@ class EyeReminder(QMainWindow):
 
     def connect_tray(self) -> None:
         self.tray.icon.activated.connect(self.tray_icon_activated)
+        self.tray.menu.settings_action.triggered.connect(self.show)
         self.tray.menu.start_action.triggered.connect(self.countdown.start)
         self.tray.menu.pause_action.triggered.connect(self.countdown.pause)
         self.tray.menu.stop_action.triggered.connect(self.countdown.stop)
@@ -76,6 +77,7 @@ class EyeReminder(QMainWindow):
     def countdown_started(self) -> None:
         self.tray.icon.setIcon(QIcon(config.icons.tray_active))
         self.ui.timer_controller.disable()
+        self.ui.timer_displayer.set_active(True)
 
     @Slot()
     def countdown_expired(self) -> None:
@@ -89,17 +91,21 @@ class EyeReminder(QMainWindow):
     @Slot()
     def countdown_paused(self) -> None:
         self.tray.icon.setIcon(QIcon(config.icons.tray_message))
+        self.ui.timer_displayer.set_active(False)
 
     @Slot()
     def countdown_stopped(self) -> None:
         self.tray.icon.setIcon(QIcon(config.icons.tray_inactive))
+        self.update_timer_displayer(self.countdown.interval.total_seconds)
         self.update_tray_tooltip(-1)
+        self.ui.timer_displayer.set_active(False)
         self.ui.timer_controller.enable()
 
     @Slot(int)
     def update_timer_displayer(self, seconds_left: int) -> None:
         remains = TimeInterval.from_seconds(seconds_left)
         self.ui.timer_displayer.display(remains.string)
+        self.tray.menu.timer_displayer.display(remains.string)
 
     @Slot(int)
     def update_tray_tooltip(self, seconds_left: int) -> None:

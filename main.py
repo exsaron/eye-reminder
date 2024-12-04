@@ -16,6 +16,6 @@ if __name__ == "__main__":
     app.setQuitOnLastWindowClosed(False)
 
     window = EyeReminder()
-    window.show()
+    window.tray.icon.show()
 
     sys.exit(app.exec())

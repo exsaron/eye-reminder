@@ -11,10 +11,38 @@ from PySide6.QtWidgets import (
     QWidgetAction,
 )
 from PySide6.QtGui import QIcon, Qt, QPalette, QColor
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtCore import Signal, Slot, QTimer
 
 from .config import config
 from .schemas import TimeInterval
+
+
+class HoldableButton(QPushButton):
+    """
+    Кнопка с поддержкой удержания.
+
+    Каждые ``delay`` мс выдает сигнал ``clicked``.
+    """
+    def __init__(
+            self,
+            label: str = '',
+            delay: int = 100,
+            parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(label, parent=parent)
+
+        self.timer = QTimer(self)
+        self.timer.setInterval(delay)
+        self.timer.timeout.connect(self.clicked)
+
+        self.pressed.connect(self.start_holding)
+        self.released.connect(self.stop_holding)
+
+    def start_holding(self) -> None:
+        self.timer.start()
+
+    def stop_holding(self) -> None:
+        self.timer.stop()
 
 
 class TimeAdjuster(QHBoxLayout):
@@ -27,16 +55,16 @@ class TimeAdjuster(QHBoxLayout):
         self.label.setAlignment(Qt.AlignRight)
         self.addWidget(self.label)
 
-        self.decrement_btn = QPushButton()
+        self.decrement_btn = HoldableButton()
         self.decrement_btn.setIcon(QIcon(config.icons.minus))
         self.decrement_btn.setMaximumWidth(35)
-        self.decrement_btn.pressed.connect(self.decrement)
+        self.decrement_btn.clicked.connect(self.decrement)
         self.addWidget(self.decrement_btn)
 
-        self.increment_btn = QPushButton()
+        self.increment_btn = HoldableButton()
         self.increment_btn.setIcon(QIcon(config.icons.plus))
         self.increment_btn.setMaximumWidth(35)
-        self.increment_btn.pressed.connect(self.increment)
+        self.increment_btn.clicked.connect(self.increment)
         self.addWidget(self.increment_btn)
 
     @Slot()

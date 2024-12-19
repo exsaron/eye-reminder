@@ -22,7 +22,7 @@ class UIContainer(QWidget):
         layout.addWidget(self.timer_displayer)
 
         self.timer_adjuster = TimerAdjuster()
-        layout.addLayout(self.timer_adjuster)
+        layout.addWidget(self.timer_adjuster)
 
         self.title_editor_label = QLabel('Заголовок уведомления:')
         self.title_editor = QLineEdit()

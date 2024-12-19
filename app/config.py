@@ -4,9 +4,11 @@ from dataclasses import dataclass, asdict, field
 from pathlib import Path
 
 if getattr(sys, 'frozen', False):
+    # EXE mode
     BASE_DIR = Path(getattr(sys, '_MEIPASS'))
     CONFIG_DIR = Path(sys.executable).parent / 'config'
 else:
+    # PY mode
     BASE_DIR = Path(__file__).resolve().parent.parent
     CONFIG_DIR = BASE_DIR / 'config'
 
@@ -22,9 +24,20 @@ class PersistentSettings:
 
 
 @dataclass(frozen=True)
+class Labels:
+    timer_start: str = 'Старт'
+    timer_restart: str = 'Перезапуск'
+    timer_pause: str = 'Пауза'
+    timer_resume: str = 'Продолжить'
+    timer_stop: str = 'Стоп'
+
+
+@dataclass(frozen=True)
 class Tooltips:
-    timer_start: str = 'Запуск таймера с текущей отметки'
+    timer_start: str = 'Запуск таймера'
+    timer_restart: str = 'Перезапуск таймера'
     timer_pause: str = 'Остановка таймера с сохранением текущего значения'
+    timer_resume: str = 'Запуск таймера с текущей отметки'
     timer_stop: str = 'Остановка и обнуление таймера'
     save: str = 'Сохранить текущие настройки'
     tray_default: str = APP_NAME
@@ -39,6 +52,7 @@ class IconPaths:
     save: str
     shutdown: str
     timer_start: str
+    timer_restart: str
     timer_pause: str
     timer_stop: str
     plus: str
@@ -59,6 +73,7 @@ def get_icon_paths(dir_path: Path) -> IconPaths:
         save=load_icon(dir_path, 'save.png'),
         shutdown=load_icon(dir_path, 'shutdown.png'),
         timer_start=load_icon(dir_path, 'timer_start.png'),
+        timer_restart=load_icon(dir_path, 'restart.png'),
         timer_pause=load_icon(dir_path, 'timer_pause.png'),
         timer_stop=load_icon(dir_path, 'timer_stop.png'),
         plus=load_icon(dir_path, 'plus.png'),
@@ -78,6 +93,7 @@ class Config:
     persistent: PersistentSettings = field(default_factory=PersistentSettings)
     icons: IconPaths | None = None
     tooltips: Tooltips = Tooltips()
+    labels: Labels = Labels()
 
     @property
     def config_file(self) -> Path:

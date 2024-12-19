@@ -55,28 +55,34 @@ class EyeReminder(QMainWindow):
         self.countdown.paused.connect(self.countdown_paused)
         self.countdown.stopped.connect(self.countdown_stopped)
 
+    def connect_controller(self) -> None:
+        self.ui.timer_controller.start.connect(self.countdown.on_start)
+        self.ui.timer_controller.pause.connect(self.countdown.on_pause)
+        self.ui.timer_controller.stop.connect(self.countdown.on_stop)
+
+    def connect_adjuster(self) -> None:
+        self.ui.timer_adjuster.set_initial_time(self.countdown.interval)
+        self.ui.timer_adjuster.seconds_updated.connect(self.countdown.set_interval)
+        self.ui.timer_adjuster.seconds_updated.connect(self.update_timer_displayer)
+
     def connect_tray(self) -> None:
         self.tray.icon.activated.connect(self.tray_icon_activated)
         self.tray.menu.settings_action.triggered.connect(self.show)
-        self.tray.menu.start_action.triggered.connect(self.countdown.start)
-        self.tray.menu.pause_action.triggered.connect(self.countdown.pause)
-        self.tray.menu.stop_action.triggered.connect(self.countdown.stop)
+        self.tray.menu.timer_controller.start.connect(self.countdown.on_start)
+        self.tray.menu.timer_controller.pause.connect(self.countdown.on_pause)
+        self.tray.menu.timer_controller.stop.connect(self.countdown.on_stop)
         self.tray.menu.exit_action.triggered.connect(self.exit_app)
 
     def connect_ui(self) -> None:
         self.ui.save_button.clicked.connect(self.save_preferences)
-        self.ui.start_button.clicked.connect(self.countdown.start)
-        self.ui.pause_button.clicked.connect(self.countdown.pause)
-        self.ui.stop_button.clicked.connect(self.countdown.stop)
-        self.ui.timer_controller.set_initial_time(self.countdown.interval)
-        self.ui.timer_controller.seconds_updated.connect(self.countdown.set_interval)
-        self.ui.timer_controller.seconds_updated.connect(self.update_timer_displayer)
+        self.connect_controller()
+        self.connect_adjuster()
         self.setCentralWidget(self.ui)
 
     @Slot()
     def countdown_started(self) -> None:
         self.tray.icon.setIcon(QIcon(config.icons.tray_active))
-        self.ui.timer_controller.disable()
+        self.ui.timer_adjuster.disable()
         self.ui.timer_displayer.set_active(True)
 
     @Slot()
@@ -99,7 +105,7 @@ class EyeReminder(QMainWindow):
         self.update_timer_displayer(self.countdown.interval.total_seconds)
         self.update_tray_tooltip(-1)
         self.ui.timer_displayer.set_active(False)
-        self.ui.timer_controller.enable()
+        self.ui.timer_adjuster.enable()
 
     @Slot(int)
     def update_timer_displayer(self, seconds_left: int) -> None:
